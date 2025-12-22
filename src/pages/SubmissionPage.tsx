@@ -38,11 +38,22 @@ const SubmissionPage = () => {
   }, [assignmentId]);
 
   const fetchData = async () => {
-    if (!assignmentId) return;
+    if (!assignmentId) {
+      setLoading(false);
+      return;
+    }
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please log in to view submissions",
+          variant: "destructive",
+        });
+        navigate("/auth");
+        return;
+      }
 
       // Fetch assignment
       const { data: assignmentData, error: assignmentError } = await supabase
