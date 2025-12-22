@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -27,7 +28,17 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/assignments" element={<AssignmentsPage />} />
           <Route path="/assignments/create" element={<AssignmentsPage />} />
-          <Route path="/submissions/:assignmentId" element={<SubmissionPage />} />
+          <Route
+            path="/submissions/:assignmentId"
+            element={
+              <ErrorBoundary
+                title="Submission page failed to load"
+                description="We hit an error while opening the submission screen. Try reloading or going back." 
+              >
+                <SubmissionPage />
+              </ErrorBoundary>
+            }
+          />
           <Route path="/enrollments/:courseId" element={<EnrollmentsPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/create-user" element={<CreateUserPage />} />
