@@ -7,6 +7,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { safeGetUser } from "@/lib/safeAuth";
 
 interface Assignment {
   id: string;
@@ -46,7 +47,17 @@ const SubmissionPage = () => {
     }
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { user, error: userError } = await safeGetUser();
+      if (userError && (userError as any).code === "refresh_token_not_found") {
+        toast({
+          title: "Session expired",
+          description: "Please log in again.",
+          variant: "destructive",
+        });
+        navigate("/auth");
+        return;
+      }
+
       if (!user) {
         toast({
           title: "Authentication required",
@@ -114,8 +125,8 @@ const SubmissionPage = () => {
     if (!assignmentId) return;
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const { user, error: userError } = await safeGetUser();
+      if (!user || userError) return;
 
       if (submission) {
         // Update existing submission
