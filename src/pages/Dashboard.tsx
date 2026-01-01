@@ -8,6 +8,7 @@ import LecturerDashboard from "./LecturerDashboard";
 import CourseList from "@/components/CourseList";
 import CourseDialog from "@/components/CourseDialog";
 import type { Session } from "@supabase/supabase-js";
+import { safeGetSession } from "@/lib/safeAuth";
 
 const Dashboard = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -31,8 +32,16 @@ const Dashboard = () => {
   }, [navigate]);
 
   const checkAuth = async () => {
-    const { data: { session: currentSession } } = await supabase.auth.getSession();
-    
+    const { session: currentSession, error } = await safeGetSession();
+
+    if (error && (error as any).code === "refresh_token_not_found") {
+      toast({
+        title: "Session expired",
+        description: "Please log in again.",
+        variant: "destructive",
+      });
+    }
+
     if (!currentSession) {
       navigate("/auth");
       return;
