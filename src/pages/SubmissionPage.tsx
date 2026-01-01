@@ -30,6 +30,7 @@ const SubmissionPage = () => {
   const [submission, setSubmission] = useState<Submission | null>(null);
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -39,6 +40,7 @@ const SubmissionPage = () => {
 
   const fetchData = async () => {
     if (!assignmentId) {
+      setError("No assignment ID provided");
       setLoading(false);
       return;
     }
@@ -62,25 +64,44 @@ const SubmissionPage = () => {
         .eq("id", assignmentId)
         .single();
 
-      if (assignmentError) throw assignmentError;
+      if (assignmentError) {
+        console.error("Assignment fetch error:", assignmentError);
+        setError(`Could not load assignment: ${assignmentError.message}`);
+        setLoading(false);
+        return;
+      }
+
+      if (!assignmentData) {
+        setError("Assignment not found");
+        setLoading(false);
+        return;
+      }
+
       setAssignment(assignmentData);
 
       // Fetch existing submission
-      const { data: submissionData } = await supabase
+      const { data: submissionData, error: submissionError } = await supabase
         .from("submissions")
         .select("*")
         .eq("assignment_id", assignmentId)
         .eq("student_id", user.id)
         .maybeSingle();
 
+      if (submissionError) {
+        console.error("Submission fetch error:", submissionError);
+        // Don't block the page, just log the error
+      }
+
       if (submissionData) {
         setSubmission(submissionData);
         setContent(submissionData.content);
       }
-    } catch (error: any) {
+    } catch (err: any) {
+      console.error("Unexpected error:", err);
+      setError(err.message || "An unexpected error occurred");
       toast({
         title: "Error",
-        description: error.message,
+        description: err.message,
         variant: "destructive",
       });
     } finally {
@@ -133,8 +154,24 @@ const SubmissionPage = () => {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
-  if (!assignment) {
-    return <div className="container mx-auto p-6">Assignment not found</div>;
+  if (error || !assignment) {
+    return (
+      <div className="container mx-auto p-6 max-w-3xl">
+        <Card>
+          <CardHeader>
+            <CardTitle>Unable to load assignment</CardTitle>
+            <CardDescription>
+              {error || "Assignment not found"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => navigate("/assignments")} variant="outline">
+              Back to Assignments
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const isGraded = submission?.grade !== null;
