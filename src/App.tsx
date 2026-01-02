@@ -12,6 +12,9 @@ import SubmissionPage from "./pages/SubmissionPage";
 import EnrollmentsPage from "./pages/EnrollmentsPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import CreateUserPage from "./pages/CreateUserPage";
+import LecturerAssignmentsPage from "./pages/LecturerAssignmentsPage";
+import LecturerSubmissionsPage from "./pages/LecturerSubmissionsPage";
+import StudentProgressPage from "./pages/StudentProgressPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +45,10 @@ const App = () => (
           <Route path="/enrollments/:courseId" element={<EnrollmentsPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/create-user" element={<CreateUserPage />} />
+          {/* Lecturer Routes */}
+          <Route path="/lecturer/courses/:courseId/assignments" element={<LecturerAssignmentsPage />} />
+          <Route path="/lecturer/submissions/:assignmentId" element={<LecturerSubmissionsPage />} />
+          <Route path="/lecturer/progress/:courseId" element={<StudentProgressPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
